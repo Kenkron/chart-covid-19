@@ -5,11 +5,13 @@ from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 from datetime import datetime
 
+time_str = datetime.now().strftime("%Y-%m-%d")
+
 DATA_URL  = "https://services1.arcgis.com/CY1LXxl9zlJeBuRZ/arcgis/rest/services/"
 DATA_URL += "Florida_COVID_19_Cases_by_Day_For_Time_Series/FeatureServer/0/query?"
-DATA_URL += "f=json&where=Date%20IS%20NOT%20NULL%20AND%20Date%3Ctimestamp%20%272020-04-21%2004%3A00%3A00%27&"
+DATA_URL += "f=json&where=Date%20IS%20NOT%20NULL%20AND%20Date%3Ctimestamp%20%27" + time_str + "%2004%3A00%3A00%27&"
 DATA_URL += "returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=ObjectId%2CFREQUENCY%2CDate&"
-DATA_URL += "orderByFields=Date%20asc&resultOffset=0&resultRecordCount=32000&resultType=standard&cacheHint=true"
+DATA_URL += "orderByFields=Date%20asc&resultOffset=0&resultRecordCount=32000&resultType=standard"
 
 raw_request = requests.get(DATA_URL)
 raw_json = raw_request.json()
