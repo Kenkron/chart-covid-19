@@ -31,7 +31,7 @@ times.sort()
 NEW_CASES = list(map(lambda x: daily_new_cases[x], times))
 DATES = list(map(lambda x: datetime.fromtimestamp(x/1000), times))
 
-new_case_graph = go.Bar(name="New Cases", x = DATES, y = NEW_CASES, marker_color="blue")
+new_case_graph = go.Bar(name="New Cases", x = DATES, y = NEW_CASES, marker_color="lightblue")
 
 # 3 Day moving average:
 
@@ -41,8 +41,10 @@ def getMovingAverage(data, span):
         acc = sum(data[max(0, i + 1 - span) : i + 1])
         averages.append(acc/span)
     return averages
-moving_avg_3 = getMovingAverage(NEW_CASES, 3)
-moving_avg_3_graph = go.Scatter(name="3 Day Moving Average", x = DATES, y = moving_avg_3, line_color = "green")
+
+moving_avg_span = 5
+moving_avg = getMovingAverage(NEW_CASES, moving_avg_span)
+moving_avg_graph = go.Scatter(name=str(moving_avg_span) + " Day Moving Average", x = DATES, y = moving_avg, line_color = "green")
 
 # 12 Day moving average:
 # Because the disease lasts about 12 days, this should refelct about
@@ -54,6 +56,6 @@ moving_sum_12_graph = go.Scatter(name="12 Day Sum", x = DATES, y = moving_sum_12
 figure = make_subplots(rows=2, cols=1, subplot_titles=["Florida COVID-19: Estimated Sick People", "Florida COVID-19: New Cases"])
 figure.add_trace(moving_sum_12_graph, row=1, col=1)
 figure.add_trace(new_case_graph, row=2, col=1)
-figure.add_trace(moving_avg_3_graph, row=2, col=1)
+figure.add_trace(moving_avg_graph, row=2, col=1)
 
 figure.show()
