@@ -46,7 +46,12 @@ def getMovingAverage(data, span):
 
 moving_avg_span = 5
 moving_avg = getMovingAverage(NEW_CASES, moving_avg_span)
-moving_avg_graph = go.Scatter(name=str(moving_avg_span) + " Day Moving Average", x = DATES, y = moving_avg, line_color = "green")
+moving_avg_graph = go.Scatter(
+    # Mention the timespan in the name
+    name=str(moving_avg_span) + " Day Moving Average",
+    # Line it up so that each data point is in the middle of its averaged samples
+    x = DATES[:-int(moving_avg_span/2)], y = moving_avg[int(moving_avg_span/2):],
+    line_color = "green")
 
 # 12 Day moving average:
 # Because the disease lasts about 12 days, this should refelct about
