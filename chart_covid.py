@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import requests
+from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 from datetime import datetime
 
@@ -30,7 +31,7 @@ times.sort()
 NEW_CASES = list(map(lambda x: daily_new_cases[x], times))
 DATES = list(map(lambda x: datetime.fromtimestamp(x/1000), times))
 
-new_case_graph = go.Bar(name="New Cases", x = DATES, y = NEW_CASES)
+new_case_graph = go.Bar(name="New Cases", x = DATES, y = NEW_CASES, marker_color="blue")
 
 # 3 Day moving average:
 
@@ -48,11 +49,11 @@ moving_avg_3_graph = go.Scatter(name="3 Day Moving Average", x = DATES, y = movi
 # 1/12 of current cases.
 
 moving_sum_12 = list(map(lambda x: x*12, getMovingAverage(NEW_CASES, 12)))
-moving_sum_12_graph = go.Scatter(name="12 day sum\n(Estimated Sick People)", x = DATES, y = moving_sum_12, line_color = "crimson")
+moving_sum_12_graph = go.Scatter(name="12 Day Sum", x = DATES, y = moving_sum_12, line_color = "crimson")
 
-figure = go.Figure(
-    data=[new_case_graph, moving_avg_3_graph, moving_sum_12_graph],
-    layout_title_text="Florida COVID-19 Data"
-)
-figure.update_layout(legend={"x":0, "y":1})
+figure = make_subplots(rows=2, cols=1, subplot_titles=["Florida COVID-19: Estimated Sick People", "Florida COVID-19: New Cases"])
+figure.add_trace(moving_sum_12_graph, row=1, col=1)
+figure.add_trace(new_case_graph, row=2, col=1)
+figure.add_trace(moving_avg_3_graph, row=2, col=1)
+
 figure.show()
