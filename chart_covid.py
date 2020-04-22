@@ -37,12 +37,16 @@ new_case_graph = go.Bar(name="New Cases", x = DATES, y = NEW_CASES, marker_color
 
 # 3 Day moving average:
 
-def getMovingAverage(data, span):
-    averages = []
+def getMovingSum(data, span):
+    sums = []
     for i in range(len(data)):
         acc = sum(data[max(0, i + 1 - span) : i + 1])
-        averages.append(acc/span)
-    return averages
+        sums.append(acc)
+    return sums
+
+def getMovingAverage(data, span):
+    sums = getMovingSum(data, span)
+    return list(map(lambda x: x/span, sums))
 
 moving_avg_span = 5
 moving_avg = getMovingAverage(NEW_CASES, moving_avg_span)
@@ -53,15 +57,23 @@ moving_avg_graph = go.Scatter(
     x = DATES[:-int(moving_avg_span/2)], y = moving_avg[int(moving_avg_span/2):],
     line_color = "green")
 
-# 12 Day moving average:
-# Because the disease lasts about 12 days, this should refelct about
-# 1/12 of current cases.
+# 11 Day moving average:
+# Because the disease lasts about 11 days, this should refelct about
+# 1/11 of current cases, so multiplying it by 11 should give us the actual sum
 
-moving_sum_12 = list(map(lambda x: x*12, getMovingAverage(NEW_CASES, 12)))
-moving_sum_12_graph = go.Scatter(name="12 Day Sum", x = DATES, y = moving_sum_12, line_color = "crimson")
+moving_sum_span = 11
+moving_sum = getMovingSum(NEW_CASES, moving_sum_span)
+moving_sum_graph = go.Scatter(name=str(moving_sum_span) + " Day Sum", x = DATES, y = moving_sum, line_color = "crimson")
 
-figure = make_subplots(rows=2, cols=1, subplot_titles=["Florida COVID-19: Estimated Sick People", "Florida COVID-19: New Cases"])
-figure.add_trace(moving_sum_12_graph, row=1, col=1)
+figure = make_subplots(
+    rows=2,
+    cols=1,
+    subplot_titles=[
+        "Florida COVID-19: Estimated Sick People",
+        "Florida COVID-19: New Cases"
+    ]
+)
+figure.add_trace(moving_sum_graph, row=1, col=1)
 figure.add_trace(new_case_graph, row=2, col=1)
 figure.add_trace(moving_avg_graph, row=2, col=1)
 
