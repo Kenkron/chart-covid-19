@@ -12,3 +12,5 @@ Charts statistics for COVID-19 in Florida.
   [Chinese Medical Journal](https://journals.lww.com/cmj/Abstract/publishahead/Persistence_and_clearance_of_viral_RNA_in_2019.99362.aspx)
 * Shows 5 day moving average
 * Uses Python3 and plotly
+
+![Example Output](ExampleOutput.png)
