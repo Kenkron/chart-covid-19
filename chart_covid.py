@@ -3,9 +3,9 @@
 import requests
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
-from datetime import datetime
+from datetime import datetime, timedelta
 
-time_str = datetime.now().strftime("%Y-%m-%d")
+time_str = (datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d")
 
 DATA_URL  = "https://services1.arcgis.com/CY1LXxl9zlJeBuRZ/arcgis/rest/services/"
 DATA_URL += "Florida_COVID_19_Cases_by_Day_For_Time_Series/FeatureServer/0/query?"
