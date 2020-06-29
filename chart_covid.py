@@ -5,20 +5,27 @@ from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 
-time_str = (datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d")
+def make_url(service, fields, end_datetime=(datetime.today() - timedelta(days=1))):
+    end_time_string = end_datetime.strftime("%Y-%m-%d")
+    fields_string = "%2C".join(fields)
+    url = "https://services1.arcgis.com/CY1LXxl9zlJeBuRZ/arcgis/rest/services/"
+    url += service
+    url += "/FeatureServer/0/query?f=json&"
+    url += "where=Date%20IS%20NOT%20NULL%20AND%20Date%3Ctimestamp%20%27"
+    url += end_time_string + "%2004%3A00%3A00%27&"
+    url += "outFields=" + fields_string
+    url += "&orderByFields=Date%20asc&resultType=standard"
+    return url
 
-DATA_URL  = "https://services1.arcgis.com/CY1LXxl9zlJeBuRZ/arcgis/rest/services/"
-DATA_URL += "Florida_COVID_19_Cases_by_Day_For_Time_Series/FeatureServer/0/query?"
-DATA_URL += "f=json&where=Date%20IS%20NOT%20NULL%20AND%20Date%3Ctimestamp%20%27" + time_str + "%2004%3A00%3A00%27&"
-DATA_URL += "returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=ObjectId%2CFREQUENCY%2CDate&"
-DATA_URL += "orderByFields=Date%20asc&resultOffset=0&resultRecordCount=32000&resultType=standard"
+CASES_URL = make_url("Florida_COVID_19_Cases_by_Day_For_Time_Series", ["Frequency", "Date"])
+print(CASES_URL)
 
-raw_request = requests.get(DATA_URL)
-raw_json = raw_request.json()
+cases_request = requests.get(CASES_URL)
+cases_json = cases_request.json()
 
 # Populate day-by-day data
 daily_new_cases = {}
-for feature in raw_json["features"]:
+for feature in cases_json["features"]:
 	entry = feature["attributes"]
 	if entry["Date"] in daily_new_cases:
 		daily_new_cases[entry["Date"]] += entry["FREQUENCY"]
