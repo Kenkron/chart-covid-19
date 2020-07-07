@@ -18,29 +18,49 @@ def make_url(service, fields, end_datetime=(datetime.today() - timedelta(days=1)
     return url
 
 CASES_URL = make_url("Florida_COVID_19_Cases_by_Day_For_Time_Series", ["Frequency", "Date"])
-print(CASES_URL)
+
+DEATHS_URL = make_url("Florida_COVID_19_Deaths_by_Day", ["Deaths", "Date"])
 
 cases_request = requests.get(CASES_URL)
 cases_json = cases_request.json()
 
+deaths_request = requests.get(DEATHS_URL)
+deaths_json = deaths_request.json()
+
 # Populate day-by-day data
 daily_new_cases = {}
 for feature in cases_json["features"]:
-	entry = feature["attributes"]
-	if entry["Date"] in daily_new_cases:
-		daily_new_cases[entry["Date"]] += entry["FREQUENCY"]
-	else:
-		daily_new_cases[entry["Date"]] = entry["FREQUENCY"]
+    entry = feature["attributes"]
+    if entry["Date"] in daily_new_cases:
+        daily_new_cases[entry["Date"]] += entry["FREQUENCY"]
+    else:
+        daily_new_cases[entry["Date"]] = entry["FREQUENCY"]
+
+daily_deaths = {}
+for feature in deaths_json["features"]:
+    entry = feature["attributes"]
+    if entry["Date"] in daily_deaths:
+        daily_deaths[entry["Date"]] += entry["Deaths"]
+    else:
+        daily_deaths[entry["Date"]] = entry["Deaths"]
 
 # Plot a bar chart of the data
-times = list(daily_new_cases.keys())
-times.sort()
+case_times = list(daily_new_cases.keys())
+case_times.sort()
+death_times = list(daily_deaths.keys())
+death_times.sort()
 
 # Daily new case data:
-NEW_CASES = list(map(lambda x: daily_new_cases[x], times))
-DATES = list(map(lambda x: datetime.fromtimestamp(x/1000), times))
+NEW_CASES = list(map(lambda x: daily_new_cases[x], case_times))
+DEATHS = list(map(lambda x: daily_deaths[x], death_times))
+# To prevent confusion, make sure the deaths graph is as long as the new cases graph
+if (case_times[-1] not in death_times):
+    death_times.append(case_times[-1])
+    daily_deaths[death_times[-1]] = -1
+DATES = list(map(lambda x: datetime.fromtimestamp(x/1000), case_times))
 
 new_case_graph = go.Bar(name="New Cases", x = DATES, y = NEW_CASES, marker_color="lightblue")
+deaths_graph = go.Bar(name="Deaths", x = DATES, y = DEATHS, marker_color="darkred")
 
 # 3 Day moving average:
 
@@ -74,7 +94,7 @@ moving_sum_graph = go.Scatter(name=str(moving_sum_span) + " Day Sum", x = DATES,
 
 figure = make_subplots(
     rows=2,
-    cols=1,
+    cols=2,
     subplot_titles=[
         "Florida COVID-19: Estimated Sick People",
         "Florida COVID-19: New Cases"
@@ -82,6 +102,7 @@ figure = make_subplots(
 )
 figure.add_trace(moving_sum_graph, row=1, col=1)
 figure.add_trace(new_case_graph, row=2, col=1)
+figure.add_trace(deaths_graph, row=2, col=2)
 figure.add_trace(moving_avg_graph, row=2, col=1)
 
 figure.show()
