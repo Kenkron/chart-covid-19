@@ -93,16 +93,17 @@ moving_sum = getMovingSum(NEW_CASES, moving_sum_span)
 moving_sum_graph = go.Scatter(name=str(moving_sum_span) + " Day Sum", x = DATES, y = moving_sum, line_color = "crimson")
 
 figure = make_subplots(
-    rows=2,
-    cols=2,
+    rows=3,
+    cols=1,
     subplot_titles=[
-        "Florida COVID-19: Estimated Sick People",
-        "Florida COVID-19: New Cases"
+        "Florida COVID-19: 11 Day Sum",
+        "Florida COVID-19: New Cases",
+        "Florida COVID-19: Deaths"
     ]
 )
 figure.add_trace(moving_sum_graph, row=1, col=1)
 figure.add_trace(new_case_graph, row=2, col=1)
-figure.add_trace(deaths_graph, row=2, col=2)
+figure.add_trace(deaths_graph, row=3, col=1)
 figure.add_trace(moving_avg_graph, row=2, col=1)
 
 figure.show()
