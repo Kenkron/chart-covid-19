@@ -5,7 +5,11 @@ from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 
-def make_url(service, fields, end_datetime=datetime.today()):
+# The latest few days have innacurate data. This is the number of
+# entries to remove from the end of the bar graphs. (Min 1)
+BUFFER = 1
+
+def make_url(service, fields, end_datetime=(datetime.today() - timedelta(days=1))):
     end_time_string = end_datetime.strftime("%Y-%m-%d")
     fields_string = "%2C".join(fields)
     url = "https://services1.arcgis.com/CY1LXxl9zlJeBuRZ/arcgis/rest/services/"
@@ -60,8 +64,6 @@ if (case_times[-1] not in death_times):
 
 DATES = list(map(lambda x: datetime.fromtimestamp(x/1000), case_times))
 DEATH_DATES =  list(map(lambda x: datetime.fromtimestamp(x/1000), death_times))
-
-BUFFER = 2
 
 new_case_graph = go.Bar(name="New Cases", x = DATES[:-BUFFER], y = NEW_CASES[:-BUFFER], marker_color="lightblue")
 deaths_graph = go.Bar(name="Deaths", x = DEATH_DATES[:-BUFFER], y = DEATHS[:-BUFFER], marker_color="darkred")
