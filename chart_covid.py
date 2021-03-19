@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 # entries to remove from the end of the bar graphs. (Min 1)
 BUFFER = 1
 
-def make_url(service, fields, end_datetime=(datetime.today() - timedelta(days=1))):
+def make_url(service, fields, end_datetime=(datetime.today() - timedelta(days=10))):
     end_time_string = end_datetime.strftime("%Y-%m-%d")
     fields_string = "%2C".join(fields)
     url = "https://services1.arcgis.com/CY1LXxl9zlJeBuRZ/arcgis/rest/services/"
