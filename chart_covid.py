@@ -9,61 +9,31 @@ from datetime import datetime, timedelta
 # entries to remove from the end of the bar graphs. (Min 1)
 BUFFER = 1
 
-def make_url(service, fields, end_datetime=(datetime.today() - timedelta(days=10))):
-    end_time_string = end_datetime.strftime("%Y-%m-%d")
-    fields_string = "%2C".join(fields)
-    url = "https://services1.arcgis.com/CY1LXxl9zlJeBuRZ/arcgis/rest/services/"
-    url += service
-    url += "/FeatureServer/0/query?f=json&"
-    url += "where=Date%20IS%20NOT%20NULL%20AND%20Date%3Ctimestamp%20%27"
-    url += end_time_string + "%2004%3A00%3A00%27&"
-    url += "outFields=" + fields_string
-    url += "&orderByFields=Date%20asc&resultType=standard"
-    return url
-
-CASES_URL = make_url("Florida_COVID_19_Cases_by_Day_For_Time_Series", ["Frequency", "Date"])
-
-DEATHS_URL = make_url("Florida_COVID_19_Deaths_by_Day", ["Deaths", "Date"])
+CASES_URL = "https://jhucoronavirus.azureedge.net/api/v1/timeseries/us/cases/FL.json"
+DEATHS_URL = "https://jhucoronavirus.azureedge.net/api/v1/timeseries/us/deaths/FL.json"
 
 cases_request = requests.get(CASES_URL)
-cases_json = cases_request.json()
+new_cases = cases_request.json()
 
 deaths_request = requests.get(DEATHS_URL)
-deaths_json = deaths_request.json()
-
-# Populate day-by-day data
-daily_new_cases = {}
-for feature in cases_json["features"]:
-    entry = feature["attributes"]
-    if entry["Date"] in daily_new_cases:
-        daily_new_cases[entry["Date"]] += entry["FREQUENCY"]
-    else:
-        daily_new_cases[entry["Date"]] = entry["FREQUENCY"]
-
-daily_deaths = {}
-for feature in deaths_json["features"]:
-    entry = feature["attributes"]
-    if entry["Date"] in daily_deaths:
-        daily_deaths[entry["Date"]] += entry["Deaths"]
-    else:
-        daily_deaths[entry["Date"]] = entry["Deaths"]
+new_deaths = deaths_request.json()
 
 # Plot a bar chart of the data
-case_times = list(daily_new_cases.keys())
+case_times = list(new_cases.keys())
 case_times.sort()
-death_times = list(daily_deaths.keys())
+death_times = list(new_deaths.keys())
 death_times.sort()
 
 # Daily new case data:
-NEW_CASES = list(map(lambda x: daily_new_cases[x], case_times))
-DEATHS = list(map(lambda x: daily_deaths[x], death_times))
+NEW_CASES = list(map(lambda x: new_cases[x]["raw_positives"], case_times))
+DEATHS = list(map(lambda x: new_deaths[x]["raw_positives"], death_times))
 # To prevent confusion, make sure the deaths graph is as long as the new cases graph
 if (case_times[-1] not in death_times):
     death_times.append(case_times[-1])
-    daily_deaths[death_times[-1]] = -1
+    new_deaths[death_times[-1]] = -1
 
-DATES = list(map(lambda x: datetime.fromtimestamp(x/1000), case_times))
-DEATH_DATES =  list(map(lambda x: datetime.fromtimestamp(x/1000), death_times))
+DATES = list(map(lambda x: datetime.strptime(x, "%Y-%m-%d"), case_times))
+DEATH_DATES =  list(map(lambda x: datetime.strptime(x, "%Y-%m-%d"), death_times))
 
 new_case_graph = go.Bar(name="New Cases", x = DATES[:-BUFFER], y = NEW_CASES[:-BUFFER], marker_color="lightblue")
 deaths_graph = go.Bar(name="Deaths", x = DEATH_DATES[:-BUFFER], y = DEATHS[:-BUFFER], marker_color="darkred")
